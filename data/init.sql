@@ -1,6 +1,6 @@
-CREATE DATABASE test;
+CREATE DATABASE phppdo;
 
-use test;
+use phppdo;
 
 CREATE TABLE users (
 	id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
