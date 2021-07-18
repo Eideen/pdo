@@ -1,3 +1,3 @@
 </body>
-<p>This is a footer. Plese be nice</p>
+<p>This is a footer. Please be nice</p>
 </html>

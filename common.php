@@ -30,7 +30,8 @@ function test_input($data) {
 
 
 function testtekst($input, $errorempty, $errorregex) {
-  $output = "$input";
+  $error = '';
+	$output = "$input";
   if (empty($input)) {
     $error = $errorempty;
   } elseif (!preg_match("/^[0-9a-zA-Z-' ]{5,}$/",$input)) {
@@ -39,6 +40,7 @@ function testtekst($input, $errorempty, $errorregex) {
   return  $error;
 }
 function testURL($input, $errorempty, $errorregex) {
+	$error = '';
   $output = "$input";
   if (empty($input)) {
     $error = $errorempty;
@@ -48,6 +50,7 @@ function testURL($input, $errorempty, $errorregex) {
   return  $error;
 }
 function testIP($input, $errorempty, $errorregex) {
+	$error = '';
   $output = "$input";
   if (empty($input)) {
     $error = $errorempty;
@@ -57,6 +60,7 @@ function testIP($input, $errorempty, $errorregex) {
   return  $error;
 }
 function testPORT($input, $errorempty, $errorregex) {
+	$error = '';
   $output = "$input";
   if (empty($input)) {
     $error = $errorempty;
@@ -77,7 +81,7 @@ function imgproxy($key, $salt,  $url, $extension) {
 
 	$resize = 'fill';
 	$width = 300;
-	$height = 300; 
+	$height = 300;
 
 	$encodedUrl = rtrim(strtr(base64_encode($url), '+/', '-_'), '=');
 

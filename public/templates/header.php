@@ -12,4 +12,4 @@
 </head>
 
 <body>
-	<h1>Simple Database App</h1>
+	<h1>Simple Database App for kamera</h1>

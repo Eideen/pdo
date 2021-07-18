@@ -46,22 +46,24 @@ if (isset($_POST['submit']))
     try  {
       $connection = new PDO($dsn, $username, $password, $options);
       $imgurl = $_POST['ipaddress'] .  ":" . $_POST['httpport'] . $_POST['imgurl'] ;
-     echo "$imgurl <br>";
+//     echo "$imgurl <br>";
       $imgurl = imgproxy($key, $salt, $imgurl, 'jpg');
-      echo "$imgurl";
+//      echo "$imgurl";
       $new_kamera = array(
         "anlegg"     => $_POST['anlegg'],
         "kameranavn" => $_POST['kameranavn'],
         "ipaddress"  => $_POST['ipaddress'],
         "rtspurl"    => $_POST['rtspurl'],
         "rtspport"   => $_POST['rtspport'],
-        "imgurl"     => $imgurl,
-        "httpport"   => $_POST['httpport']
+        "imgurl"     => $_POST['imgurl'],
+        "httpport"   => $_POST['httpport'],
+        "imgproxyurl" => $imgurl
 
       );
+      echo json_encode($new_kamera);
+      echo "<br><br><br>";
       $sql = sprintf(
-        "INSERT INTO %s (%s) values (%s)",
-        "users",
+        "INSERT INTO %s (%s) values (%s)", "$dbtable",
         implode(", ", array_keys($new_kamera)),
         ":" . implode(", :", array_keys($new_kamera))
       );
