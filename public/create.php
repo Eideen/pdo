@@ -1,3 +1,13 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+.error {color: #FF0000;}
+</style>
+</head>
+<body>
+
+
 <?php
 
 /**
@@ -5,100 +15,59 @@
  * users table.
  *
  */
-$firstname = $lastname = $email = $age = $location = "";
-$firstnameErr = $lastnameErr = $emailErr = $ageErr = $locationErr = "";
+
+$err['anlegg'] = $lastnameErr = $emailErr = $ageErr = $locationErr = "";
+$anlegg = $kameranavn = $ipaddress = $rtspurl =   $imgurl = "" ;
+$_POST['rtspport'] = 554 ;
+$_POST['httpport'] = 80 ;
 
 require "../config.php";
 require "../common.php";
 
-function test_input($data) {
-  $data = trim($data);
-  $data = stripslashes($data);
-  $data = htmlspecialchars($data);
-  return $data;
-}
 
-if (isset($_POST['submit'])) {
 
-  if (empty($_POST['firstname'])) {
-    $firstnameErr = "firstname is required";
-  } else {
-    // save value to variable, to repost
-    $firstname = test_input($_POST["firstname"]);
-    // check if name only contains letters and whitespace
-    if (!preg_match("/^[a-zA-Z-' ]*$/",$firstname)) {
-      $firstnameErr = "Only letters and white space allowed";
-     // echo escape($_POST['firstname']);
-    }
-  }
-  if (empty($_POST['lastname'])) {
-    $lastnameErr = "lastname is required";
-  } else {
-    // save value to variable, to repost
-    $lastname = test_input($_POST["lastname"]);
-    // check if name only contains letters and whitespace
-    if (!preg_match("/^[a-zA-Z-' ]*$/",$lastname)) {
-      $lastnameErr = "Only letters and white space allowed";
-     // echo escape($_POST['firstname']);
-    }
-  }
-  if (empty($_POST["email"])) {
-    $emailErr = "Email is required";
-  } else {
-    $email = test_input($_POST["email"]);
-    // check if e-mail address is well-formed
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      $emailErr = "Invalid email format";
-    }
-  }
-  if (empty($_POST['age'])) {
-    $ageErr = "age is required";
-  } else {
-    // save value to variable, to repost
-    $age = test_input($_POST["age"]);
-    // check if name only contains letters and whitespace
-    if (!preg_match("/^[1-9][0-9]*$/",$age)) {
-      $ageErr = "Only vaulves between 1-99 ";
-     // echo escape($_POST['firstname']);
-    }
-  }
-  /// location
-  if (empty($_POST['location'])) {
-    $locationErr = "location is required";
-  } else {
-    // save value to variable, to repost
-    $location = test_input($_POST["location"]);
-    // check if name only contains letters and whitespace
-    if (!preg_match("/^[a-zA-Z-' ]*$/",$location)) {
-      $locationErr = "Only letters and white space allowed";
-     // echo escape($_POST['firstname']);
-    }
-  }
+//////////     test logic     /////////////////
+if (isset($_POST['submit']))
+{
+  // kontroller for feil.
+  $err['anlegg'] = testtekst($_POST['anlegg'],         "Anleggsnavn er påbud", "kun [0-9a-zA-Z-' ] er tiltatt, minimum 5 tegn");
+  $err['kameranavn'] = testtekst($_POST['kameranavn'], "Kameranavn er påbud", "kun [-a-zA-Z0-9@:%_\+.~#?&//=] er tiltatt, minimum 5 tegn");
+  $err['ipaddress'] = testIP($_POST['ipaddress'],     "IP address/hostname  er påbud", "kun [-a-zA-Z0-9@:%_\+.~#?&//=] er tiltatt, minimum 4 tegn grupper");
+  $err['rtspurl'] = testURL($_POST['rtspurl'],         "RTSP url er påbud", "kun [-a-zA-Z0-9@:%_\+.~#?&//=] er tiltatt, minimum 4 tegn grupper");
+  $err['rtspport'] = testPORT($_POST['rtspport'],         "RTSP port er påbud", "kun [0-9] er tiltatt, minimum 3 tegn grupper");
+  $err['imgurl'] = testURL($_POST['imgurl'],         "IMG url er påbud", "kun [-a-zA-Z0-9@:%_\+.~#?&//=] er tiltatt, minimum 4 tegn grupper");
+  $err['httpport'] = testPORT($_POST['httpport'],         "RTSP port er påbud", "kun [0-9] er tiltatt, minimum 3 tegn grupper");
 
-  if ( false == ($firstnameErr || $lastnameErr || $emailErr || $ageErr || $locationErr))  {
+
+
+  if ( false == ($err['anlegg'] || $err['kameranavn'] || $err['ipaddress'] || $err['imgurl'] || $err['httpport']))  {
     if (!hash_equals($_SESSION['csrf'], $_POST['csrf'])) die();
 
     try  {
-
       $connection = new PDO($dsn, $username, $password, $options);
+      $imgurl = $_POST['ipaddress'] .  ":" . $_POST['httpport'] . $_POST['imgurl'] ;
+     echo "$imgurl <br>";
+      $imgurl = imgproxy($key, $salt, $imgurl, 'jpg');
+      echo "$imgurl";
+      $new_kamera = array(
+        "anlegg"     => $_POST['anlegg'],
+        "kameranavn" => $_POST['kameranavn'],
+        "ipaddress"  => $_POST['ipaddress'],
+        "rtspurl"    => $_POST['rtspurl'],
+        "rtspport"   => $_POST['rtspport'],
+        "imgurl"     => $imgurl,
+        "httpport"   => $_POST['httpport']
 
-      $new_user = array(
-        "firstname" => $_POST['firstname'],
-        "lastname"  => $_POST['lastname'],
-        "email"     => $_POST['email'],
-        "age"       => $_POST['age'],
-        "location"  => $_POST['location']
       );
-
       $sql = sprintf(
         "INSERT INTO %s (%s) values (%s)",
         "users",
-        implode(", ", array_keys($new_user)),
-        ":" . implode(", :", array_keys($new_user))
+        implode(", ", array_keys($new_kamera)),
+        ":" . implode(", :", array_keys($new_kamera))
       );
 
       $statement = $connection->prepare($sql);
-      $statement->execute($new_user);
+      $statement->execute($new_kamera);
     } catch(PDOException $error) {
         echo $sql . "<br>" . $error->getMessage();
     }
@@ -109,41 +78,54 @@ if (isset($_POST['submit'])) {
 
 
   <?php if (isset($_POST['submit']) && $statement) : ?>
-    <blockquote><?php echo escape($_POST['firstname']); ?> successfully added.</blockquote>
+    <blockquote><?php echo escape($_POST['anlegg']); ?> successfully added.</blockquote>
   <?php endif; ?>
+
+
 
 <!--HTML -->
   <h2>Add a user</h2>
-
-<p><span class="error">* required field</span></p>
+  <p><span class="error">* required field</span></p>
   <form method="post">
-    <input name="csrf" type="hidden" value="<?php echo escape($_SESSION['csrf']); ?>">
+     <input name="csrf" type="hidden" value="<?php echo escape($_SESSION['csrf']); ?>">
 
-    <!-- Firstname -->
-    <label for="firstname">First Name</label>
-    <input type="text" name="firstname" id="firstname" value="<?php echo $firstname;?>">
-    <span class="error">* <?php echo $firstnameErr;?></span>
+    <!-- anlegg -->
+    <label for="anlegg">Anlegg</label>
+    <input type="text" name="anlegg" id="anlegg" value="<?php echo $_POST['anlegg'];?>">
+    <span class="error">* eksemple: "Bomlafjordtunnelen" <?php echo $err['anlegg'];?></span>
 
-    <!-- Lasttname -->
-    <label for="lastname">Last Name</label>
-    <input type="text" name="lastname" id="lastname" value="<?php echo $lastname;?>">
-    <span class="error">* <?php echo $lastnameErr;?></span>
+    <!-- kameranavn -->
+    <label for="kameranavn">Kamera name</label>
+    <input type="text" name="kameranavn" id="kameranavn" value="<?php echo $_POST['kameranavn'];?>">
+    <span class="error">* eksemple: "AS10-RA103" <?php echo $err['kameranavn'] ;?></span>
 
-    <!-- epost -->
-    <label for="email">Email Address</label>
-    <input type="text" name="email" id="email" value="<?php echo $email;?>">
-    <span class="error">* <?php echo $emailErr;?></span>
+    <!-- ipaddress -->
+    <label for="ipaddress">IP address/hostname </label>
+    <input type="text" name="ipaddress" id="ipaddress" value="<?php echo $_POST['ipaddress'];?>">
+    <span class="error">* <?php echo $err['ipaddress'] ;?></span>
 
-    <!-- age -->
-    <label for="age">Age</label>
-    <input type="text" name="age" id="age" value="<?php echo $age;?>">
-    <span class="error">* <?php echo $ageErr;?></span>
+    <!-- rtspurl -->
+    <label for="age">RTSP url</label>
+    <input type="text" name="rtspurl" id="rtspurl" value="<?php echo $_POST['rtspurl'];?>">
+    <span class="error">* <?php echo $err['rtspurl'];?></span>
 
-    <!-- Location -->
-    <label for="location">Location</label>
-    <input type="text" name="location" id="location" value="<?php echo $location;?>">
-    <span class="error">* <?php echo $locationErr;?></span>
-      <br><br>
+    <!-- rtspport -->
+    <label for="location">RTSP port</label>
+    <input type="text" name="rtspport" id="rtspport" value="<?php echo $_POST['rtspport'];?>">
+    <span class="error">* <?php echo $err['rtspport'];?></span>
+
+
+    <!-- imgurl -->
+    <label for="location">imgurl</label>
+    <input type="text" name="imgurl" id="imgurl" value="<?php echo $_POST['imgurl'];?>">
+    <span class="error">* <?php echo $err['imgurl'];?></span>
+
+    <!-- httpport -->
+    <label for="location">httpport</label>
+    <input type="text" name="httpport" id="httpport" value="<?php echo $_POST['httpport'];?>">
+    <span class="error">* <?php echo $err['httpport'];?></span>
+    <br><br>
+
     <input type="submit" name="submit" value="Submit">
   </form>
 

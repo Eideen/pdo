@@ -1,13 +1,12 @@
-CREATE DATABASE phppdo;
-
-use phppdo;
-
-CREATE TABLE users (
-	id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
-	firstname VARCHAR(30) NOT NULL,
-	lastname VARCHAR(30) NOT NULL,
-	email VARCHAR(50) NOT NULL,
-	age INT(3),
-	location VARCHAR(50),
+CREATE TABLE kamera (
+	id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	anlegg VARCHAR(30) NOT NULL,
+	kameranavn VARCHAR(30) NOT NULL,
+	ipaddress VARCHAR(50) NOT NULL,
+	rtspurl VARCHAR(255) NOT NULL,
+	rtspport INT(6) NOT NULL,
+	imgurl VARCHAR(255) NOT NULL,
+	httpport INT(6) NOT NULL,
+	imgproxyurl VARCHAR(255) NOT NULL,
 	date TIMESTAMP
 );
